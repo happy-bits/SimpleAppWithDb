@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using MyWebApp.Data;
 
+// System.IO.File.AppendAllLines("LLLLLLLLOG.txt", ["👉 Starting program! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")]);
+
+try
+{
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -29,6 +33,13 @@ app.MapStaticAssets();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+        .WithStaticAssets();
 
-app.Run();
+    app.Run();
+}
+catch (Exception ex)
+{
+    System.IO.File.AppendAllLines("LLLLLLLLOG.txt", ["👉 Error: " + ex.Message]);
+    throw;
+}
+
