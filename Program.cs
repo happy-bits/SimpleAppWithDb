@@ -1,53 +1,56 @@
 using Microsoft.EntityFrameworkCore;
 using MyWebApp.Data;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
-string logFile = "____log.txt";
-System.IO.File.AppendAllLines(logFile, [DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "👉 Starting program! " ]);
+
+void Log(string text)
+{
+    string logFile = "____log.txt";
+    var message = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} 👉 {text}";
+    System.IO.File.AppendAllLines(logFile, [message]);
+    Console.WriteLine(message);
+}
 
 try
 {
+    Log("Starting program!");
+
+    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+    Log($"Environment: {environment}");
+
     var builder = WebApplication.CreateBuilder(args);
 
-    // Add DNS check logging
-    try 
-    {
-        var hostEntry = System.Net.Dns.GetHostEntry("db.ffgugnzpcofosresavnl.supabase.co");
-        System.IO.File.AppendAllLines(logFile, [
-            DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + 
-            "👉 DNS Resolution successful. IP: " + 
-            string.Join(", ", hostEntry.AddressList.Select(ip => ip.ToString()))
-        ]);
-    }
-    catch (Exception dnsEx)
-    {
-        System.IO.File.AppendAllLines(logFile, [
-            DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + 
-            "👉 DNS Resolution failed: " + dnsEx.Message
-        ]);
-    }
+    builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
 
-    // Add services to the container.
     builder.Services.AddControllersWithViews();
 
-    System.IO.File.AppendAllLines(logFile, [DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "👉 Connection string: " + builder.Configuration.GetConnectionString("DefaultConnection") ]);
+    var dbPassword = builder.Configuration["DbPassword:"+environment];
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-    builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    Log($"Connection string: {connectionString} - innan");
+
+    connectionString = connectionString.Replace("<DbPassword>", dbPassword);
+
+    Log($"Connection string: {connectionString} - efter");
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString)
+    );
+
+
 
     var app = builder.Build();
 
-    // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())
     {
         app.UseExceptionHandler("/Home/Error");
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
         app.UseHsts();
     }
 
     app.UseHttpsRedirection();
     app.UseRouting();
-
     app.UseAuthorization();
-
     app.MapStaticAssets();
 
     app.MapControllerRoute(
@@ -59,7 +62,7 @@ try
 }
 catch (Exception ex)
 {
-    System.IO.File.AppendAllLines(logFile, ["👉 Error: " + ex.Message + " " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")]);
+    Log($"Error: {ex.Message}");
     throw;
 }
 

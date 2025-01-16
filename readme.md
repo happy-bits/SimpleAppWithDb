@@ -2,6 +2,10 @@
 
 En exempelsite med databas, som kan användas för att visa hur publicering kan göras
 
+# Secrets.js
+
+Skapa en fil secrets.json utifrån secrets.sample.json och fyll i dina egna värden.
+
 # Starta lokalt
 
 Kör detta kommando för att skapa en ny databas lokalt. Ändra portnumret och lösenordet till dina egna värden.

@@ -1,4 +1,5 @@
 bin/
 obj/
-readme-secret.md
 publish/
+secrets.json
+____log.txt
