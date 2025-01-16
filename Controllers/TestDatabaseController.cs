@@ -18,8 +18,15 @@ public class TestDatabaseController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var products = await _context.Products.ToListAsync();
-        return View(products);
+        try {
+            var products = await _context.Products.ToListAsync();
+            return View(products);
+        } catch (Exception ex) {
+
+            System.IO.File.AppendAllLines("___error.txt", [DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " " + ex.Message]);
+
+            throw;
+        }
     }
 
     public async Task<IActionResult> AddRandomProduct()

@@ -2,16 +2,35 @@ using Microsoft.EntityFrameworkCore;
 using MyWebApp.Data;
 
 string logFile = "____log.txt";
-System.IO.File.AppendAllLines(logFile, ["👉 SSStarting program! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")]);
+System.IO.File.AppendAllLines(logFile, [DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "👉 Starting program! " ]);
 
 try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    // Add DNS check logging
+    try 
+    {
+        var hostEntry = System.Net.Dns.GetHostEntry("db.ffgugnzpcofosresavnl.supabase.co");
+        System.IO.File.AppendAllLines(logFile, [
+            DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + 
+            "👉 DNS Resolution successful. IP: " + 
+            string.Join(", ", hostEntry.AddressList.Select(ip => ip.ToString()))
+        ]);
+    }
+    catch (Exception dnsEx)
+    {
+        System.IO.File.AppendAllLines(logFile, [
+            DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + 
+            "👉 DNS Resolution failed: " + dnsEx.Message
+        ]);
+    }
+
     // Add services to the container.
     builder.Services.AddControllersWithViews();
 
-    // Console.WriteLine("👉 Connection string: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+    System.IO.File.AppendAllLines(logFile, [DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "👉 Connection string: " + builder.Configuration.GetConnectionString("DefaultConnection") ]);
+
     builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     var app = builder.Build();
