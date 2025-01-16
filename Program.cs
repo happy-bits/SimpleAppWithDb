@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MyWebApp.Data;
 
 string logFile = "____log.txt";
-System.IO.File.AppendAllLines(logFile, ["👉 Starting program! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")]);
+System.IO.File.AppendAllLines(logFile, ["👉 SSStarting program! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")]);
 
 try
 {
